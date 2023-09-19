@@ -2,6 +2,9 @@ import sys
 import random
 import pyautogui
 import threading
+import win32con
+import win32gui
+import ctypes
 
 from pynput.mouse import Listener
 
@@ -30,13 +33,13 @@ class Window(QMainWindow):
         self.cords = []
         self.jail_objects = []
 
-        self.sania_defoult_skin = QPixmap('../res/sania.png')
-        self.sania_ult_1_skin = QPixmap('../res/sania_ult_1.png')
-        self.sania_ult_2_skin = QPixmap('../res/sania_ult_2.png')
+        self.sania_defoult_skin = QPixmap('../res/sania/sania.png')
+        self.sania_ult_1_skin = QPixmap('../res/sania/sania_ult_1.png')
+        self.sania_ult_2_skin = QPixmap('../res/sania/sania_ult_2.png')
         
-        self.stas_defoult_skin = QPixmap('../res/stas.png')
-        self.stas_ult_1_skin = QPixmap('../res/stas_ult_1.png')
-        self.stas_ult_2_skin = QPixmap('../res/stas_ult_2.png')
+        self.stas_defoult_skin = QPixmap('../res/stas/stas.png')
+        self.stas_ult_1_skin = QPixmap('../res/stas/stas_ult_1.png')
+        self.stas_ult_2_skin = QPixmap('../res/stas/stas_ult_2.png')
 
         # calling method
         self.UiComponents()
@@ -49,10 +52,14 @@ class Window(QMainWindow):
         self.timer.timeout.connect(self.move_player)
         self.timer.start(random.randint(1200, 4000))
         
-        self.random_choice = random.choice([self.sania_ult_1, self.sania_ult_2])
+        self.sania_random_choice = random.choice([self.sania_ult_1, self.sania_ult_2])
+        self.stas_random_choice = random.choice([self.stas_ult_1, self.stas_ult_2])
 
         self.ult_timer = QTimer(self)
-        self.ult_timer.timeout.connect(self.stas_ult_1)
+        if self.player_chose == 'sania':
+            self.ult_timer.timeout.connect(self.sania_random_choice)
+        else:
+            self.ult_timer.timeout.connect(self.stas_random_choice)
         self.ult_timer.start(random.randint(5000, 15000))
 
     def thread(func):
@@ -60,8 +67,14 @@ class Window(QMainWindow):
             current_thread = threading.Thread(
                 target=func, args=args, kwargs=kwargs)
             current_thread.start()
-
         return wrapper
+    
+    def closeEvent(self, event):
+        try:
+            ctypes.windll.user32.SetSystemCursor(self.save_system_cursor, 32512)
+            ctypes.windll.user32.DestroyCursor(self.save_system_cursor)
+        except:
+            pass
 
     def UiComponents(self):
         self.player = QLabel(self)
@@ -250,6 +263,25 @@ class Window(QMainWindow):
         self.continue_timer.timeout.connect(self._continue_stas)
         self.continue_timer.start(6000)
 
+    def stas_ult_2(self):
+        self.timer.stop()
+        self.ult_timer.stop()
+        
+        self.player.hide()
+        
+        cursor = win32gui.LoadImage(0, 32512, win32con.IMAGE_CURSOR, 
+                            0, 0, win32con.LR_SHARED)
+        self.save_system_cursor = ctypes.windll.user32.CopyImage(cursor, win32con.IMAGE_CURSOR, 
+                                    0, 0, win32con.LR_COPYFROMRESOURCE)
+        
+        cursor = win32gui.LoadImage(0, "../res/stas/stas_ult_2.cur", win32con.IMAGE_CURSOR, 
+                            0, 0, win32con.LR_LOADFROMFILE);
+        ctypes.windll.user32.SetSystemCursor(cursor, 32512)
+        ctypes.windll.user32.DestroyCursor(cursor);
+        
+        self.continue_timer = QTimer(self)
+        self.continue_timer.timeout.connect(self._continue_stas)
+        self.continue_timer.start(10000)
 
     @thread
     def mouse(self):
@@ -269,7 +301,6 @@ class Window(QMainWindow):
     def jailMoveEvent(self):
         while self.in_work:
             if self.current_x < self.x_limit[0] or self.current_x > self.x_limit[1] or self.current_y < self.y_limit[0] or self.current_y > self.y_limit[1]:
-                # Перемістіть курсор миші в середину визначених обмежень
                 new_x = max(self.x_limit[0], min(self.current_x, self.x_limit[1]))
                 new_y = max(self.y_limit[0], min(self.current_y, self.y_limit[1]))
                 pyautogui.moveTo(new_x, new_y)
@@ -295,15 +326,27 @@ class Window(QMainWindow):
         self.all_timer()
 
         self.continue_timer.stop()
+
+        try:
+            ctypes.windll.user32.SetSystemCursor(self.save_system_cursor, 32512)
+            ctypes.windll.user32.DestroyCursor(self.save_system_cursor)
+        except:
+            pass
+
+        try:
+            self.sleeping.deleteLater()
+            self.sleeping_text.deleteLater()
+        except:
+            pass
         
-        self.sleeping.deleteLater()
-        self.sleeping_text.deleteLater()
-        
-        self.player.setPixmap(self.stas_defoult_skin)
-        
-    
+        if self.player.isHidden():
+            self.player.show()
+        else:
+            self.player.setPixmap(self.stas_defoult_skin)
+
     def _chose_player(self, player_chose):
-        if player_chose == 'sania':
+        self.player_chose = player_chose
+        if self.player_chose == 'sania':
             self.player.setPixmap(self.sania_defoult_skin)
 
             self.player.resize(self.sania_defoult_skin.width(),
