@@ -11,6 +11,7 @@ from pynput.mouse import Listener
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import *
+from PyQt5.QtMultimedia import QSoundEffect
 
 
 class Window(QMainWindow):
@@ -39,7 +40,15 @@ class Window(QMainWindow):
         
         self.stas_defoult_skin = QPixmap('../res/stas/stas.png')
         self.stas_ult_1_skin = QPixmap('../res/stas/stas_ult_1.png')
-        self.stas_ult_2_skin = QPixmap('../res/stas/stas_ult_2.png')
+        self.stas_ult_3_skin = QPixmap('../res/stas/stas_ult_3.png')
+        
+        self.stas_vensday = QSoundEffect()
+        self.stas_vensday.setSource(QUrl.fromLocalFile("../res/stas/audio/vensday.wav"))
+        
+        self.sania_svarka = QSoundEffect()
+        self.sania_svarka.setSource(QUrl.fromLocalFile("../res/sania/audio/svarka.wav"))
+        self.sania_suparman = QSoundEffect()
+        self.sania_suparman.setSource(QUrl.fromLocalFile("../res/sania/audio/suparman.wav"))
 
         # calling method
         self.UiComponents()
@@ -53,14 +62,14 @@ class Window(QMainWindow):
         self.timer.start(random.randint(1200, 4000))
         
         self.sania_random_choice = random.choice([self.sania_ult_1, self.sania_ult_2])
-        self.stas_random_choice = random.choice([self.stas_ult_1, self.stas_ult_2])
+        self.stas_random_choice = random.choice([self.stas_ult_1, self.stas_ult_2, self.stas_ult_3])
 
         self.ult_timer = QTimer(self)
         if self.player_chose == 'sania':
             self.ult_timer.timeout.connect(self.sania_random_choice)
         else:
             self.ult_timer.timeout.connect(self.stas_random_choice)
-        self.ult_timer.start(random.randint(5000, 15000))
+        self.ult_timer.start(random.randint(8000, 30000))
 
     def thread(func):
         def wrapper(*args, **kwargs):
@@ -137,6 +146,8 @@ class Window(QMainWindow):
         self.ult_timer.stop()
 
         self.player.setPixmap(self.sania_ult_1_skin)
+        
+        self.sania_svarka.play()
 
         jail_x = [self.current_x - 40, self.current_x + 40]
         jail_y = [self.current_y - 40, self.current_y + 40]
@@ -187,6 +198,8 @@ class Window(QMainWindow):
     def sania_ult_2(self):
         self.timer.stop()
         self.ult_timer.stop()
+        
+        self.sania_suparman.play()
         
         self.player.setPixmap(self.sania_ult_2_skin)
         
@@ -282,6 +295,18 @@ class Window(QMainWindow):
         self.continue_timer = QTimer(self)
         self.continue_timer.timeout.connect(self._continue_stas)
         self.continue_timer.start(10000)
+        
+    def stas_ult_3(self):
+        self.timer.stop()
+        self.ult_timer.stop()
+
+        self.player.setPixmap(self.stas_ult_3_skin)
+        
+        self.stas_vensday.play()
+        
+        self.continue_timer = QTimer(self)
+        self.continue_timer.timeout.connect(self._continue_stas)
+        self.continue_timer.start(19000)
 
     @thread
     def mouse(self):
