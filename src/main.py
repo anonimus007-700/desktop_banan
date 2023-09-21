@@ -36,33 +36,36 @@ class Window(QMainWindow):
         self.cords = []
         self.jail_objects = []
 
-        self.sania_defoult_skin = QPixmap('../res/sania/sania.png')
-        self.sania_ult_1_skin = QPixmap('../res/sania/sania_ult_1.png')
-        self.sania_ult_2_skin = QPixmap('../res/sania/sania_ult_2.png')
+        self.sania_defoult_skin = QPixmap('res/sania/sania.png')
+        self.sania_ult_1_skin = QPixmap('res/sania/sania_ult_1.png')
+        self.sania_ult_2_skin = QPixmap('res/sania/sania_ult_2.png')
         
-        self.stas_defoult_skin = QPixmap('../res/stas/stas.png')
-        self.stas_ult_1_skin = QPixmap('../res/stas/stas_ult_1.png')
-        self.stas_ult_3_skin = QPixmap('../res/stas/stas_ult_3.png')
+        self.stas_defoult_skin = QPixmap('res/stas/stas.png')
+        self.stas_ult_1_skin = QPixmap('res/stas/stas_ult_1.png')
+        self.stas_ult_3_skin = QPixmap('res/stas/stas_ult_3.png')
         
-        self.misha_defoult_skin = QPixmap('../res/misha/misha.png')
-        self.misha_ult_1_skin = QPixmap('../res/misha/misha_ult_1.png')
-        self.misha_ult_2_skin = QPixmap('../res/misha/misha_ult_2.png')
+        self.misha_defoult_skin = QPixmap('res/misha/misha.png')
+        self.misha_ult_1_skin = QPixmap('res/misha/misha_ult_1.png')
+        self.misha_ult_2_skin = QPixmap('res/misha/misha_ult_2.png')
         
-        self.kolia_defoult_skin = QPixmap('../res/kolia/kolia.png')
-        self.kolia_ult_1_skin = QPixmap('../res/kolia/kolia_ult_1.png')
+        self.kolia_defoult_skin = QPixmap('res/kolia/kolia.png')
+        self.kolia_ult_1_skin = QPixmap('res/kolia/kolia_ult_1.png')
         
         self.stas_vensday = QSoundEffect()
-        self.stas_vensday.setSource(QUrl.fromLocalFile("../res/stas/audio/vensday.wav"))
+        self.stas_vensday.setSource(QUrl.fromLocalFile("res/stas/audio/vensday.wav"))
         
         self.misha_sigma = QSoundEffect()
-        self.misha_sigma.setSource(QUrl.fromLocalFile("../res/misha/audio/sigma.wav"))
+        self.misha_sigma.setSource(QUrl.fromLocalFile("res/misha/audio/sigma.wav"))
         self.misha_dance = QSoundEffect()
-        self.misha_dance.setSource(QUrl.fromLocalFile("../res/misha/audio/dance.wav"))
+        self.misha_dance.setSource(QUrl.fromLocalFile("res/misha/audio/dance.wav"))
         
         self.sania_svarka = QSoundEffect()
-        self.sania_svarka.setSource(QUrl.fromLocalFile("../res/sania/audio/svarka.wav"))
+        self.sania_svarka.setSource(QUrl.fromLocalFile("res/sania/audio/svarka.wav"))
         self.sania_suparman = QSoundEffect()
-        self.sania_suparman.setSource(QUrl.fromLocalFile("../res/sania/audio/suparman.wav"))
+        self.sania_suparman.setSource(QUrl.fromLocalFile("res/sania/audio/suparman.wav"))
+        
+        self.boom_sound = QSoundEffect()
+        self.boom_sound.setSource(QUrl.fromLocalFile("res/boom/boom.wav"))
 
         # calling method
         self.UiComponents()
@@ -87,9 +90,9 @@ class Window(QMainWindow):
         elif self.player_chose == 'misha':
             self.ult_timer.timeout.connect(self.misha_random_choice)
         elif self.player_chose == 'kolia':
-            pass
+            self.ult_timer.timeout.connect(self.kolia_ult_1)
 
-        self.ult_timer.start(random.randint(8000, 10000))
+        self.ult_timer.start(random.randint(8000, 25000))
 
     def thread(func):
         def wrapper(*args, **kwargs):
@@ -329,7 +332,7 @@ class Window(QMainWindow):
         self.save_system_cursor = ctypes.windll.user32.CopyImage(cursor, win32con.IMAGE_CURSOR, 
                                     0, 0, win32con.LR_COPYFROMRESOURCE)
         
-        cursor = win32gui.LoadImage(0, "../res/stas/stas_ult_2.cur", win32con.IMAGE_CURSOR, 
+        cursor = win32gui.LoadImage(0, "res/stas/stas_ult_2.cur", win32con.IMAGE_CURSOR, 
                             0, 0, win32con.LR_LOADFROMFILE);
         ctypes.windll.user32.SetSystemCursor(cursor, 32512)
         ctypes.windll.user32.DestroyCursor(cursor);
@@ -353,11 +356,11 @@ class Window(QMainWindow):
     def misha_ult_1(self):
         self.timer.stop()
         self.ult_timer.stop()
-        
+
         self.player.setPixmap(self.misha_ult_1_skin)
-        
+
         self.misha_sigma.play()
-        
+
         self.continue_timer = QTimer(self)
         self.continue_timer.timeout.connect(self._continue_misha)
         self.continue_timer.start(20500)
@@ -375,18 +378,11 @@ class Window(QMainWindow):
         self.opacity_effect = QGraphicsOpacityEffect()
         self.opacity_effect.setOpacity(0.5)
         self.dance.setGraphicsEffect(self.opacity_effect)
-        
-        self.window = QLabel(self)
-        self.window.setGeometry(self.current_x,
-                                self.current_x,
-                                self.width(),
-                                self.height())
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput)
         self.show()
 
         self.layout().addWidget(self.dance)
-        self.layout().addWidget(self.window)
         self.player.raise_()
 
         self.misha_dance.play()
@@ -403,7 +399,59 @@ class Window(QMainWindow):
         self.continue_timer = QTimer(self)
         self.continue_timer.timeout.connect(self._continue_misha)
         self.continue_timer.start(9500)
+    
+    def kolia_ult_1(self):
+        self.timer.stop()
+        self.ult_timer.stop()
+
+        self.player.setPixmap(self.kolia_ult_1_skin)
         
+        self.boom = QLabel(self)
+        
+        random_s = random.choice([self.sania_defoult_skin, self.sania_ult_1_skin, self.sania_ult_2_skin])
+        random_st = random.choice([self.stas_defoult_skin, self.stas_ult_1_skin, self.stas_ult_3_skin])
+        random_m = random.choice([self.misha_defoult_skin, self.misha_ult_1_skin])
+
+        self.random_sania = QLabel(self)
+        self.random_stas = QLabel(self)
+        self.random_misha = QLabel(self)
+
+        self.random_sania.setPixmap(random_s)
+        self.random_stas.setPixmap(random_st)
+        self.random_misha.setPixmap(random_m)
+        
+        self.random_sania.setGeometry(random.randint(0, self.width()),
+                                      random.randint(0, self.height()),
+                                      60, 60)
+
+        self.random_stas.setGeometry(random.randint(0, self.width()),
+                                     random.randint(0, self.height()),
+                                     60, 60)
+
+        self.random_misha.setGeometry(random.randint(0, self.width()),
+                                      random.randint(0, self.height()),
+                                      60, 60)
+
+        self.random_sania.resize(60, 60)
+        self.random_stas.resize(60, 60)
+        self.random_misha.resize(60, 60)
+        
+        self.image_files = ["res/boom/exp1.png", "res/boom/exp2.png", "res/boom/exp3.png",
+                            "res/boom/exp4.png", "res/boom/exp5.png"]
+        self.current_image_index = 0
+        
+        self.layout().addWidget(self.boom)
+        self.layout().addWidget(self.random_sania)
+        self.layout().addWidget(self.random_stas)
+        self.layout().addWidget(self.random_misha)
+        
+        self.boom.raise_()
+        
+        boomind_player = [self.random_sania, self.random_stas, self.random_misha]
+        
+        self.boom_timer = QTimer(self)
+        self.boom_timer.timeout.connect(lambda: self.boom_event(boomind_player))
+        self.boom_timer.start(250)
 
     @thread
     def mouse(self):
@@ -434,7 +482,27 @@ class Window(QMainWindow):
         
         self.dance.setStyleSheet(f"background-color: {self.colors[self.color_index].name()};")
         self.color_index = (self.color_index + 1) % len(self.colors)
-            
+
+    def boom_event(self, boom_player):
+        self.boom.setGeometry(boom_player[0].x(),
+                              boom_player[0].y(),
+                              80, 80)
+        
+        pixmap = QPixmap(self.image_files[self.current_image_index])
+        self.boom.setPixmap(pixmap)
+        
+        if self.current_image_index == 0:
+            self.boom_sound.play()
+        
+        if self.current_image_index == 4:
+            boom_player[0].deleteLater()
+            boom_player.pop(0)
+            if  len(boom_player) == 0:
+                self._continue_kolia()
+
+        self.current_image_index += 1
+        if self.current_image_index >= len(self.image_files):
+            self.current_image_index = 0
 
     def _continue_sania(self):
         self.all_timer()
@@ -479,12 +547,14 @@ class Window(QMainWindow):
         self.all_timer()
 
         self.continue_timer.stop()
-        self.dance_timer.stop()
+        try:
+            self.dance_timer.stop()
+            self.dance.deleteLater()
+        except:
+            pass
         
         self.in_work = False
-        
-        self.dance.deleteLater()
-        
+
         self.setWindowFlags(self.window_flags)
         self.show()
         
@@ -492,6 +562,15 @@ class Window(QMainWindow):
         self.player.resize(self.misha_defoult_skin.width(),
                            self.misha_defoult_skin.height())
 
+    def _continue_kolia(self):
+        self.all_timer()
+
+        self.boom_timer.stop()
+        
+        self.boom.deleteLater()
+        
+        self.player.setPixmap(self.kolia_defoult_skin)
+    
     def _chose_player(self, player_chose):
         self.player_chose = player_chose
         if self.player_chose == 'sania':
@@ -515,8 +594,7 @@ class Window(QMainWindow):
 
             self.player.resize(self.kolia_defoult_skin.width(),
                                self.kolia_defoult_skin.height())
-        
-            
+
         self.animation = QPropertyAnimation(self.player, b"geometry")
         self.animation.setDuration(1000)
         
